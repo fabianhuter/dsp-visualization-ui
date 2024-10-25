@@ -1,10 +1,11 @@
 import { useState } from "react";
 import Chart from "./components/Chart";
-import { SineWaveData } from "./types/types";
+import {FunctionData} from "./types/types";
 import { FaExpand, FaCompress, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 function App() {
-  const [data, setData] = useState<SineWaveData[]>([]);
+  const [waveData, setWaveData] = useState<FunctionData[]>([]);
+  const [probabilityData, setProbabilityData] = useState<FunctionData[]>([]);
   const [amplitude, setAmplitude] = useState(1);
   const [frequency, setFrequency] = useState(50);
   const [duration, setDuration] = useState(1);
@@ -20,8 +21,12 @@ function App() {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      const result: SineWaveData[] = await response.json();
-      setData(result);
+      const result: any = await response.json();
+      console.log(result);
+      const waveData: FunctionData[] = result.sine_wave;
+      const probabilityData: FunctionData[] = result.probability_distribution;
+      setWaveData(waveData);
+      setProbabilityData(probabilityData);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -172,9 +177,36 @@ function App() {
           ))}
         </div>
         <h2 className="text-2xl font-bold text-gray-800 mb-4 relative z-10">Waveform Display</h2>
-        <Chart data={data} />
+        <Chart data={waveData} xLabel="Samples" yLabel="Amplitude" />
+
+
+      </div>
+
+
+      <div className={`bg-white shadow-lg w-full rounded-lg p-6 border-2 border-gray-300 relative overflow-hidden ${isFullScreen ? 'fixed top-0 left-0 w-full h-full z-50' : ''}`}>
+        <button
+          onClick={() => setIsFullScreen(!isFullScreen)}
+          className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+        >
+          {isFullScreen ? <FaCompress size={20} /> : <FaExpand size={20} />}
+        </button>
+        <div className="absolute inset-0 grid grid-cols-12 gap-4 pointer-events-none opacity-10">
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className="border-l border-gray-300 h-full"></div>
+          ))}
+        </div>
+        <div className="absolute inset-0 grid grid-rows-6 gap-4 pointer-events-none opacity-10">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="border-t border-gray-300 w-full"></div>
+          ))}
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 relative z-10">Probability Distribution</h2>
+        <Chart data={probabilityData} xLabel="Amplitude" yLabel="Probability" />
       </div>
     </div>
+
+
   );
 }
 
